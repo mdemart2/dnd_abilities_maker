@@ -1,9 +1,12 @@
+#!/bin/env python
+　
 import random
 import itertools
-
+from collections import OrderedDict
+　
 def roll(x=1, d=6):
   return sum([random.randint(1,d) for _ in range(x)])
-
+　
 class Character:
   ATTRIBUTES = ['int', 'con', 'dex', 'wis', 'cha', 'str']
   #['str', 'dex', 'con', 'int', 'wis', 'dex']
@@ -38,10 +41,18 @@ class Character:
     return min([a.score for a in self.abilities])
     
   def is_underpowered(self):
-    return (self.total_score() <= 71 or self.best_score() < 16 or self.worst_score() < 6 or self.scores()[2] <=9)
+    return (self.total_score() <= 73 or
+            self.best_score()  <= 14 or
+            self.worst_score() <= 5  or
+            self.scores()[2]   <= 9
+           )
     
   def is_overpowered(self):
-    return (self.total_score() >= 76 or self.worst_score() > 11 or self.best_score() == 18 or self.scores()[3] >=15)
+    return (self.total_score() >= 78 or
+            self.worst_score() >  11 or
+            self.best_score()  == 18 or
+            self.scores()[3]   >= 15
+           )
     
   @classmethod
   def re_roll(cls, names=None):
@@ -90,15 +101,39 @@ def some_char_is_strictly_better_than_another(chars):
     if a.is_strictly_better_than(b) or b.is_strictly_better_than(a):
       return True
   return False
-
-
-def main():
-  num_chars = 3
-  my_abs = ["str", "cha", "con", "dex", "wis", "int"]
+　
+　
+def regular_characters(num_chars=3):
+  #num_chars = 3
+  my_abs = ["int", "con", "dex", "wis", "cha", "str"]
   ok_chars = random_average_characters(num_chars, my_abs)
-  while some_char_is_strictly_better_than_another(ok_chars):
-    ok_chars = random_average_characters(num_chars, my_abs)
-
+  if(num_chars >=2):
+    while some_char_is_strictly_better_than_another(ok_chars):
+      ok_chars = random_average_characters(num_chars, my_abs)
+　
+  return ok_chars
+　
+def stats_of_some_sample_chars(ok_chars):
+  stats_scores = [0]*len(ok_chars[0].scores())
+　
+　
+  for i, _ in enumerate(ok_chars[0].scores()):
+    stats_scores[i] = {}#OrderedDict({3:0, 4:0, 5:0, 6:0, 7:0, 8:0, 9:0, 10:0, 11:0, 12:0, 13:0, 14:0, 15:0, 16:0, 17:0, 18:0})
+    for c in ok_chars:
+      try:
+        stats_scores[i][c.scores()[i]] += 1
+      except (KeyError):
+        stats_scores[i][c.scores()[i]] = 1
+　
+  for i, ith_worst in enumerate(stats_scores):
+    print(str(6-i) + ":")
+    thing = OrderedDict(sorted(ith_worst.items(), key=lambda t: t[0]))
+    for k in thing.keys():
+      print(str(k)+": " + str(thing[k]))
+    print()
+    print()
+　
+def print_regular_chars(ok_chars):
   for i, c in enumerate(ok_chars):
     print("Character ", i+1)
     print("Total score: ", c.total_score())
@@ -106,6 +141,9 @@ def main():
     print("Overpowered? ", c.is_overpowered())
     c.print_abilities()
     print()
-
+　
 if __name__ == "__main__":
-  main()
+  #chars = regular_characters(1)
+  stats_of_some_sample_chars(random_average_characters(1000))
+  #stats_of_some_sample_chars(regular_characters(10))
+  #stats_of_some_sample_chars(1000)
